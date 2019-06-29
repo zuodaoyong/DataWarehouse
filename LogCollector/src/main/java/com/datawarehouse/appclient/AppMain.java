@@ -7,6 +7,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.datawarehouse.bean.*;
+import com.datawarehouse.kafka.KafkaProducerService;
+import com.datawarehouse.kafka.KafkaProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ public class AppMain {
     }
 
     private static void generateLog(Long delay, int loop_len) {
-
+        KafkaProducerService producer=new KafkaProducerService(KafkaProperties.KAFKA_SERVER_URL,true);
         for (int i = 0; i < loop_len; i++) {
 
             int flag = rand.nextInt(2);
@@ -52,7 +54,8 @@ public class AppMain {
                     String jsonString = JSON.toJSONString(appStart);
 
                     //控制台打印
-                    logger.info(jsonString);
+                    //logger.info(jsonString);
+                    producer.sendMessage("topic_start",jsonString);
                     break;
 
                 case (1):
@@ -135,7 +138,8 @@ public class AppMain {
                     long millis = System.currentTimeMillis();
 
                     //控制台打印
-                    logger.info(millis + "|" + json.toJSONString());
+                    //logger.info(millis + "|" + json.toJSONString());
+                    producer.sendMessage("topic_event",millis + "|" + json.toJSONString());
                     break;
             }
 
