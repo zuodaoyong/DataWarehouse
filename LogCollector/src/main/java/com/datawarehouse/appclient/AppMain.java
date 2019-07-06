@@ -875,7 +875,7 @@ public class AppMain {
         b[1] = (Integer.valueOf(lowPos)).byteValue();
 
         try {
-            str = new String(b, "GBK");
+            str = new String(b, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             System.out.println("错误");

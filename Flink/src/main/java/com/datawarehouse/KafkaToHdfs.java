@@ -7,24 +7,18 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.fs.bucketing.BucketingSink;
 import org.apache.flink.streaming.connectors.fs.bucketing.DateTimeBucketer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 
-import java.net.URI;
 import java.time.ZoneId;
 
 public class KafkaToHdfs {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+        System.setProperty("HADOOP_USER_NAME","root");
         ParameterTool params = ParameterTool.fromArgs(args);
         env.enableCheckpointing(30000L);
 
-        Configuration conf=new Configuration();
-        //FileSystem fs = FileSystem.get(new URI("hdfs://home0:9000"), conf, "root");
-
         FlinkKafkaConsumer09<String> topic_startConsumer = new FlinkKafkaConsumer09<>("topic_start", new SimpleStringSchema(), KafkaProperties.getProperties());
-        FlinkKafkaConsumer09<String> topic_eventConsumer = new FlinkKafkaConsumer09<>("topic_start", new SimpleStringSchema(), KafkaProperties.getProperties());
+        FlinkKafkaConsumer09<String> topic_eventConsumer = new FlinkKafkaConsumer09<>("topic_event", new SimpleStringSchema(), KafkaProperties.getProperties());
         DataStreamSource<String> topic_startDataSource = env.addSource(topic_startConsumer);
         DataStreamSource<String> topic_eventDataSource = env.addSource(topic_eventConsumer);
 
@@ -39,13 +33,15 @@ public class KafkaToHdfs {
          * 设置大小和滚动时间，只要满足一个，就会滚动，和flume差不多
          */
         //设置每个文件的最大大小 ,默认是384M(1024 * 1024 * 384)
-        topic_startSink.setBatchSize(1024 * 1024); //this is 1M
+        //topic_startSink.setBatchSize(1024 * 1024); //this is 1M
         //设置多少时间，就换一个文件写  但是ms  这里我设置的是 一个小时
         topic_startSink.setBatchRolloverInterval(1000 * 60 * 60);
+        //topic_startSink.setWriter(new LzoSequenceFileWriter());
         topic_startDataSource.addSink(topic_startSink);
 
-        topic_eventSink.setBatchSize(1024 * 1024);
+        //topic_eventSink.setBatchSize(1024 * 1024);
         topic_eventSink.setBatchRolloverInterval(1000 * 60 * 60);
+        //topic_eventSink.setWriter(new LzoSequenceFileWriter());
         topic_eventDataSource.addSink(topic_eventSink);
 
         env.execute(KafkaToHdfs.class.getSimpleName());
