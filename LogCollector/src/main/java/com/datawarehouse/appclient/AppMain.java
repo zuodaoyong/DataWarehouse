@@ -35,7 +35,7 @@ public class AppMain {
         Long delay = args.length > 0 ? Long.parseLong(args[0]) : 0L;
 
         // 参数二：循环遍历次数
-        int loop_len = args.length > 1 ? Integer.parseInt(args[1]) : 1000;
+        int loop_len = args.length > 1 ? Integer.parseInt(args[1]) : 100000;
 
         // 生成数据
         generateLog(delay, loop_len);
