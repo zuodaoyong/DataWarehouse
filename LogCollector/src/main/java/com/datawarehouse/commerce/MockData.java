@@ -1,5 +1,7 @@
 package com.datawarehouse.commerce;
 
+import com.datawarehouse.commerce.bean.ProductInfo;
+import com.datawarehouse.commerce.bean.UserInfo;
 import com.datawarehouse.commerce.bean.UserVisitAction;
 import com.datawarehouse.utils.CommonUtils;
 import com.datawarehouse.utils.TimeUtils;
@@ -19,7 +21,31 @@ public class MockData {
         SparkSession sparkSession = SparkSession.builder().config(sparkConf).getOrCreate();
 
         List<UserVisitAction> userVisitActions = mockUserVisitActionData();
+        List<UserInfo> userInfos = mockUserInfo();
+        List<ProductInfo> productInfos = mockProductInfo();
 
+
+    }
+
+    /**
+     * 模拟产品数据表
+     *
+     * @return
+     */
+    private static List<ProductInfo> mockProductInfo(){
+
+        List<ProductInfo> rows = new ArrayList<>();
+        Random random = new Random();
+        List<Integer> productStatus = Arrays.asList(new Integer[]{0, 1});
+
+        // 随机产生100个产品信息
+        for (int i =0;i<100;i++) {
+            Long productId = Long.valueOf(i);
+            String productName = "product" + i;
+            String extendInfo = "{\"product_status\": " + productStatus.get(random.nextInt(2)) + "}"
+            rows.add(new ProductInfo(productId, productName, extendInfo));
+        }
+        return rows;
     }
 
     /**
@@ -27,25 +53,25 @@ public class MockData {
      *
      * @return
      */
-    private def mockUserInfo(): Array[UserInfo] = {
+    private static List<UserInfo> mockUserInfo() {
 
-        val rows = ArrayBuffer[UserInfo]()
-        val sexes = Array("male", "female")
-        val random = new Random()
+        List<UserInfo> rows = new ArrayList<>();
+        List<String> sexes = Arrays.asList(new String[]{"male", "female"});
+        Random random = new Random();
 
         // 随机产生100个用户的个人信息
-        for (i <- 0 to 100) {
-            val userid = i
-            val username = "user" + i
-            val name = "name" + i
-            val age = random.nextInt(60)
-            val professional = "professional" + random.nextInt(100)
-            val city = "city" + random.nextInt(100)
-            val sex = sexes(random.nextInt(2))
-            rows += UserInfo(userid, username, name, age,
-                    professional, city, sex)
+        for (int i=0;i<100;i++) {
+            Long userid = Long.valueOf(i);
+            String username = "user" + i;
+            String name = "name" + i;
+            int age = random.nextInt(60);
+            String professional = "professional" + random.nextInt(100);
+            String city = "city" + random.nextInt(100);
+            String sex = sexes.get(random.nextInt(2));
+            rows.add(new UserInfo(userid, username, name, age,
+                    professional, city, sex));
         }
-        rows.toArray
+        return rows;
     }
 
     /**
