@@ -57,10 +57,10 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.lzo</groupId>
             <artifactId>Lzo</artifactId>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
 </project>
