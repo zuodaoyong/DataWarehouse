@@ -24,6 +24,7 @@ public class UserInfo implements Serializable {
     private String city;
     private String sex;
 
+    public UserInfo(){}
     public UserInfo(Long user_id, String username, String name, Integer age, String professional, String city, String sex) {
         this.user_id = user_id;
         this.username = username;

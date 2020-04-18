@@ -36,6 +36,8 @@ public class UserVisitAction implements Serializable {
     private String pay_product_ids;
     private Long city_id;
 
+    public UserVisitAction(){}
+
     public UserVisitAction(String date, Long user_id, String session_id, Long page_id, String action_time, String search_keyword, Long click_category_id, Long click_product_id, String order_category_ids, String order_product_ids, String pay_category_ids, String pay_product_ids, Long city_id) {
         this.date = date;
         this.user_id = user_id;

@@ -1,17 +1,13 @@
 package com.datawarehouse.commerce;
 
-import com.alibaba.fastjson.JSONObject;
 import com.datawarehouse.commerce.bean.ProductInfo;
 import com.datawarehouse.commerce.bean.UserInfo;
 import com.datawarehouse.commerce.bean.UserVisitAction;
 import com.datawarehouse.config.InitSpark;
 import com.datawarehouse.utils.CommonUtils;
 import com.datawarehouse.utils.TimeUtils;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;

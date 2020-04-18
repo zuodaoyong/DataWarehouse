@@ -13,6 +13,7 @@ public class InitSpark {
             sparkConf=new SparkConf().setAppName(appName).setMaster("local[*]");
             sparkConf.set("spark.default.parallelism",parallelism+"");
             sparkConf.set("spark.sql.catalogImplementation","hive");
+            sparkConf.set("spark.driver.allowMultipleContexts","true");
             sparkConf.set("hive.metastore.uris","thrift://master:9083");
             sparkConf.set("spark.sql.warehouse.dir","hdfs://master:9000/user/hive/warehouse");
             sparkConf.set("hive.metastore.warehouse.dir","hdfs://master:9000/user/hive/warehouse");
