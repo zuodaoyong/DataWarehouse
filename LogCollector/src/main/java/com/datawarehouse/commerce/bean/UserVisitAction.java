@@ -1,5 +1,7 @@
 package com.datawarehouse.commerce.bean;
 
+import java.io.Serializable;
+
 /**
  * 用户访问动作表
  *
@@ -17,8 +19,9 @@ package com.datawarehouse.commerce.bean;
  * @param pay_product_ids    一次支付中所有商品的ID集合
  * @param city_id            城市ID
  */
-public class UserVisitAction {
+public class UserVisitAction implements Serializable {
 
+    private static final long serialVersionUID = -8534894349701323965L;
     private String date;
     private Long user_id;
     private String session_id;

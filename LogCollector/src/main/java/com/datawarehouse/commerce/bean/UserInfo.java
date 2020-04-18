@@ -1,5 +1,7 @@
 package com.datawarehouse.commerce.bean;
 
+import java.io.Serializable;
+
 /**
  * 用户信息表
  *
@@ -11,8 +13,9 @@ package com.datawarehouse.commerce.bean;
  * @param city         用户所在的城市
  * @param sex          用户的性别
  */
-public class UserInfo {
+public class UserInfo implements Serializable {
 
+    private static final long serialVersionUID = -5104820806035898681L;
     private Long user_id;
     private String username;
     private String name;

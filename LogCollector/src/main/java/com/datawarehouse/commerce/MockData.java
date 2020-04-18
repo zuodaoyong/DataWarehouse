@@ -1,11 +1,20 @@
 package com.datawarehouse.commerce;
 
+import com.alibaba.fastjson.JSONObject;
 import com.datawarehouse.commerce.bean.ProductInfo;
 import com.datawarehouse.commerce.bean.UserInfo;
 import com.datawarehouse.commerce.bean.UserVisitAction;
+import com.datawarehouse.config.InitSpark;
 import com.datawarehouse.utils.CommonUtils;
 import com.datawarehouse.utils.TimeUtils;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 
 import java.util.*;
@@ -16,15 +25,37 @@ public class MockData {
     public static void main(String[] args) {
 
         // 创建Spark配置
-        SparkConf sparkConf = new SparkConf().setAppName("MockData").setMaster("local[*]");
-
-        SparkSession sparkSession = SparkSession.builder().config(sparkConf).getOrCreate();
-
+        InitSpark initSpark = new InitSpark();
+        JavaSparkContext sc=initSpark.getJavaSparkContext(MockData.class.getSimpleName(),1);
+        SparkSession sparkSession = initSpark.getSparkSession(MockData.class.getSimpleName(),1);
         List<UserVisitAction> userVisitActions = mockUserVisitActionData();
         List<UserInfo> userInfos = mockUserInfo();
         List<ProductInfo> productInfos = mockProductInfo();
+        JavaRDD<UserVisitAction> userVisitActionJavaRDD = sc.parallelize(userVisitActions);
+        Dataset<Row> userVisitActionDF = sparkSession.createDataFrame(userVisitActionJavaRDD, UserVisitAction.class);
+        insertHive(sparkSession,"user_visit_action",userVisitActionDF);
 
+        JavaRDD<UserInfo> userInfoJavaRDD = sc.parallelize(userInfos);
+        Dataset<Row> userInfoDF = sparkSession.createDataFrame(userInfoJavaRDD, UserInfo.class);
+        insertHive(sparkSession,"user_info",userInfoDF);
 
+        JavaRDD<ProductInfo> productInfoJavaRDD = sc.parallelize(productInfos);
+        Dataset<Row> productInfoDF = sparkSession.createDataFrame(productInfoJavaRDD, ProductInfo.class);
+        insertHive(sparkSession,"product_info",productInfoDF);
+        sc.close();
+        sparkSession.close();
+
+    }
+
+    private static void print(SparkSession sparkSession){
+        sparkSession.sql("use test");
+        Dataset<Row> sql = sparkSession.sql("select * from stu");
+        sql.show();
+    }
+    private static void insertHive(SparkSession sparkSession,String  tableName, Dataset<Row> df){
+        sparkSession.sql("use commerce");
+        sparkSession.sql("DROP TABLE IF EXISTS " + tableName);
+        df.write().mode(SaveMode.Overwrite).saveAsTable(tableName);
     }
 
     /**
@@ -42,7 +73,7 @@ public class MockData {
         for (int i =0;i<100;i++) {
             Long productId = Long.valueOf(i);
             String productName = "product" + i;
-            String extendInfo = "{\"product_status\": " + productStatus.get(random.nextInt(2)) + "}"
+            String extendInfo = "{\"product_status\": " + productStatus.get(random.nextInt(2)) + "}";
             rows.add(new ProductInfo(productId, productName, extendInfo));
         }
         return rows;

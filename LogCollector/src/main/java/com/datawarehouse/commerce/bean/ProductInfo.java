@@ -1,5 +1,7 @@
 package com.datawarehouse.commerce.bean;
 
+import java.io.Serializable;
+
 /**
  * 产品表
  *
@@ -8,8 +10,9 @@ package com.datawarehouse.commerce.bean;
  * @param extend_info  商品额外的信息
  */
 
-public class ProductInfo {
+public class ProductInfo implements Serializable {
 
+    private static final long serialVersionUID = -1928280326684738671L;
     private Long product_id;
     private String product_name;
     private String extend_info;
