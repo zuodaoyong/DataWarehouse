@@ -1,16 +1,20 @@
 package com.datawarehouse.appclient;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.datawarehouse.bean.*;
-import com.datawarehouse.kafka.KafkaProducerService;
-import com.datawarehouse.kafka.KafkaProperties;
+import com.datawarehouse.config.InitSpark;
+import org.apache.spark.sql.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.spark.sql.functions;
 
 /**
  * 日志行为数据模拟
@@ -31,18 +35,42 @@ public class AppMain {
 
     public static void main(String[] args) {
 
-        // 参数一：控制发送每条的延时时间，默认是0
-        Long delay = args.length > 0 ? Long.parseLong(args[0]) : 0L;
+        InitSpark initSpark=new InitSpark();
+        SparkSession sparkSession = initSpark.getSparkSession(AppMain.class.getSimpleName(), 1);
 
-        // 参数二：循环遍历次数
-        int loop_len = args.length > 1 ? Integer.parseInt(args[1]) : 100000;
+        List<String> dates= Arrays.asList(new String[]{"2020-04-10","2020-04-11","2020-04-12","2020-04-13","2020-04-14","2020-04-15","2020-04-16","2020-04-17","2020-04-18"});
+        for(int i=0;i<dates.size();i++){
+            List<String> startLogs=new ArrayList<>();
+            List<String> eventLogs=new ArrayList<>();
 
-        // 生成数据
-        generateLog(delay, loop_len);
+            // 生成数据
+            generateLog(startLogs,eventLogs);
+
+            Dataset<String> startLogDS = sparkSession.createDataset(startLogs, Encoders.STRING());
+
+
+            Dataset<String> eventLogDS = sparkSession.createDataset(eventLogs, Encoders.STRING());
+
+            sparkSession.sql("use gmall");
+            if(i==0){
+                insertToHive(startLogDS,SaveMode.Overwrite,dates.get(i),"ods_start_log");
+                insertToHive(eventLogDS,SaveMode.Overwrite,dates.get(i),"ods_event_log");
+            }else{
+                insertToHive(startLogDS,SaveMode.Append,dates.get(i),"ods_start_log");
+                insertToHive(eventLogDS,SaveMode.Append,dates.get(i),"ods_event_log");
+            }
+        }
+
     }
 
-    private static void generateLog(Long delay, int loop_len) {
-        KafkaProducerService producer=new KafkaProducerService(KafkaProperties.KAFKA_SERVER_URL,true);
+    private static void insertToHive(Dataset<String> logDS,SaveMode saveMode,String date,String tableName){
+        Dataset<Row> logDF = logDS.withColumn("dt", functions.lit(date));
+        logDF=logDF.withColumnRenamed("value","line");
+        logDF.write().mode(saveMode).partitionBy("dt").saveAsTable(tableName);
+    }
+
+    private static void generateLog(List<String> startLogs,List<String> eventLogs) {
+        int loop_len=100000;
         for (int i = 0; i < loop_len; i++) {
 
             int flag = rand.nextInt(2);
@@ -55,7 +83,7 @@ public class AppMain {
 
                     //控制台打印
                     //logger.info(jsonString);
-                    producer.sendMessage("topic_start",jsonString);
+                    startLogs.add(jsonString);
                     break;
 
                 case (1):
@@ -139,16 +167,10 @@ public class AppMain {
 
                     //控制台打印
                     //logger.info(millis + "|" + json.toJSONString());
-                    producer.sendMessage("topic_event",millis + "|" + json.toJSONString());
+                    eventLogs.add(millis + "|" + json.toJSONString());
                     break;
             }
 
-            // 延迟
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
