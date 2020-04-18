@@ -8,7 +8,6 @@ import com.datawarehouse.config.InitSpark;
 import com.datawarehouse.utils.TimeUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.*;
 import org.apache.spark.sql.*;
 import scala.Tuple2;
