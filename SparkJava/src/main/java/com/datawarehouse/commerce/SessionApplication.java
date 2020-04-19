@@ -54,7 +54,7 @@ public class SessionApplication {
         sparkSession.close();
     }
 
-    private static JavaRDD<Tuple2<String, String>> sessionIdStaticFullRDD(JavaRDD<Tuple2<String, String>> sessionIdFullRDD,SessionAccumulator sessionAccumulator){
+    public static JavaRDD<Tuple2<String, String>> sessionIdStaticFullRDD(JavaRDD<Tuple2<String, String>> sessionIdFullRDD,SessionAccumulator sessionAccumulator){
         return sessionIdFullRDD.map(new Function<Tuple2<String, String>, Tuple2<String, String>>() {
             @Override
             public Tuple2<String, String> call(Tuple2<String, String> stringStringTuple2) throws Exception {
@@ -86,7 +86,7 @@ public class SessionApplication {
         });
     }
 
-    private static JavaRDD<Tuple2<String, String>> userIdAggrJoinUserInfo(JavaPairRDD<Long, String> userIdAggr,JavaPairRDD<Long, UserInfo> userInfoRDD){
+    public static JavaRDD<Tuple2<String, String>> userIdAggrJoinUserInfo(JavaPairRDD<Long, String> userIdAggr,JavaPairRDD<Long, UserInfo> userInfoRDD){
         JavaPairRDD<Long, Tuple2<String, UserInfo>> join = userIdAggr.join(userInfoRDD);
         JavaRDD<Tuple2<String, String>> map = join.map(new Function<Tuple2<Long, Tuple2<String, UserInfo>>, Tuple2<String, String>>() {
             @Override
@@ -105,7 +105,7 @@ public class SessionApplication {
         return map;
     }
 
-    private static JavaPairRDD<Long, UserInfo> getUserInfo(SparkSession sparkSession){
+    public static JavaPairRDD<Long, UserInfo> getUserInfo(SparkSession sparkSession){
         sparkSession.sql("use commerce");
         Dataset<Row> df = sparkSession.sql("select * from user_info");
         Encoder<UserInfo> bean = Encoders.bean(UserInfo.class);
@@ -126,7 +126,7 @@ public class SessionApplication {
         return longUserInfoJavaPairRDD;
     }
 
-    private static JavaPairRDD<Long, String> getUserIdAggr(JavaRDD<UserVisitAction> userVisitActionRDD){
+    public static JavaPairRDD<Long, String> getUserIdAggr(JavaRDD<UserVisitAction> userVisitActionRDD){
         JavaPairRDD<String, Iterable<UserVisitAction>> userVisitActionBySessionGroup = userVisitActionRDD.mapPartitionsToPair(new PairFlatMapFunction<Iterator<UserVisitAction>, String, UserVisitAction>() {
             @Override
             public Iterator<Tuple2<String, UserVisitAction>> call(Iterator<UserVisitAction> userVisitActionIterator) throws Exception {
@@ -202,7 +202,7 @@ public class SessionApplication {
         return longStringJavaPairRDD;
     }
 
-    private static JavaRDD<UserVisitAction> getUserVisitActionRDD(SparkSession sparkSession){
+    public static JavaRDD<UserVisitAction> getUserVisitActionRDD(SparkSession sparkSession){
         sparkSession.sql("use commerce");
         Dataset<Row> df = sparkSession.sql("select * from user_visit_action");
         Encoder<UserVisitAction> visitActionEncoder = Encoders.bean(UserVisitAction.class);
